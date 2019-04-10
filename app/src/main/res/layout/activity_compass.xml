@@ -5,6 +5,7 @@
     android:id="@+id/activity_compass"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#708090"
     tools:context=".Compass">
 
     <TextView
@@ -14,8 +15,8 @@
         android:layout_centerHorizontal="true"
         android:text="0°"
         android:textAlignment="center"
-        android:textColor="#000"
-        android:textSize="40sp"
+        android:textColor="#40E0D0"
+        android:textSize="42sp"
         android:textStyle="bold" />
 
     <ImageView

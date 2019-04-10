@@ -4,18 +4,28 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class Compass extends AppCompatActivity implements SensorEventListener {
     ImageView compass_img;
     TextView txt_compass;
+    RelativeLayout compass_layout;
+    MediaPlayer mp;
+    boolean mAllowShakeNsound;
+    long startTime;
     int mAzimuth;
     private SensorManager mSensorManager;
     private Sensor mRotationV, mAccelerometer, mMagnetometer;
@@ -34,6 +44,9 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass_img = (ImageView) findViewById(R.id.img_compass);
         txt_compass = (TextView) findViewById(R.id.txt_azimuth);
+        compass_layout = (RelativeLayout) findViewById(R.id.activity_compass);
+        startTime = SystemClock.elapsedRealtime();
+
 
         start();
     }
@@ -101,10 +114,24 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
 
         String where = "NW";
 
-        if (mAzimuth >= 350 || mAzimuth <= 10)
+        if (mAzimuth == 345 || mAzimuth == 15) {
+
+        }
+        if (mAzimuth >= 345 || mAzimuth <= 15) {
             where = "N";
-        if (mAzimuth < 350 && mAzimuth > 280)
+            compass_layout.setBackgroundColor(Color.GREEN);
+            compass_layout.invalidate();
+            if (hasTwoSecondsPassed()) {
+                shakeItBaby();
+                playSound();
+            }
+
+        }
+        if (mAzimuth < 345 && mAzimuth > 280) {
             where = "NW";
+            compass_layout.setBackgroundColor(0x708090);
+            compass_layout.invalidate();
+        }
         if (mAzimuth <= 280 && mAzimuth > 260)
             where = "W";
         if (mAzimuth <= 260 && mAzimuth > 190)
@@ -115,8 +142,11 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
             where = "SE";
         if (mAzimuth <= 100 && mAzimuth > 80)
             where = "E";
-        if (mAzimuth <= 80 && mAzimuth > 10)
+        if (mAzimuth <= 80 && mAzimuth > 15) {
             where = "NE";
+            compass_layout.setBackgroundColor(0x708090);
+            compass_layout.invalidate();
+        }
 
 
         txt_compass.setText(mAzimuth + "° " + where);
@@ -124,12 +154,15 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
 
     @Override
     protected void onPause() {
+        mp.stop();
+        mAllowShakeNsound = false;
         super.onPause();
         stop();
     }
 
     @Override
     protected void onResume() {
+        mAllowShakeNsound = true;
         super.onResume();
         start();
     }
@@ -137,6 +170,53 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
+    private void shakeItBaby() {
+        if (mAllowShakeNsound) {
+            if (Build.VERSION.SDK_INT >= 26) {
+                ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(50);
+            }
+        }
+    }
+
+    /**
+     * Play the sound using android.media.MediaPlayer
+     */
+    public void playSound() {
+        stopPlaying();
+        if (mAllowShakeNsound) {
+            mp = MediaPlayer.create(getApplicationContext(), R.raw.bell);
+            mp.start();
+        }
+    }
+
+    public boolean hasTwoSecondsPassed() {
+        long elapsedMilliSeconds = SystemClock.elapsedRealtime() - startTime;
+        double elapsedSeconds = elapsedMilliSeconds / 1000.0;
+        if (elapsedSeconds > 2) {
+            startTime = SystemClock.elapsedRealtime();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void stopPlaying() {
+        if (mp != null) {
+            mp.stop();
+            mp.release();
+            mp = null;
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
 
     }
 }

@@ -12,13 +12,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
     }
 
 
     /** Called when the user taps the compass button */
     public void openCompass(View view) {
         Intent intent = new Intent(this, Compass.class);
-        startActivity(intent);
+        startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY));
 
         // Do something in response to button
     }
