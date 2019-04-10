@@ -2,7 +2,6 @@ package com.example.myinteractiveapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.content.Context;
@@ -10,12 +9,11 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class Accelerometer extends AppCompatActivity implements SensorEventListener {
-
+    static final float ALPHA = 0.25f;
     private boolean mInitialized;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -50,13 +48,15 @@ public class Accelerometer extends AppCompatActivity implements SensorEventListe
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
+    public void onSensorChanged(SensorEvent evt) {
+        float[] event=new float[3];
+        event = lowPass(evt.values.clone(),event);
         TextView tvX = (TextView) findViewById(R.id.x_axis);
         TextView tvY = (TextView) findViewById(R.id.y_axis);
         TextView tvZ = (TextView) findViewById(R.id.z_axis);
-        float x = event.values[0];
-        float y = event.values[1];
-        float z = event.values[2];
+        float x = event[0];
+        float y = event[1];
+        float z = event[2];
         if (!mInitialized) {
             mLastX = x;
             mLastY = y;
@@ -66,14 +66,14 @@ public class Accelerometer extends AppCompatActivity implements SensorEventListe
             tvZ.setText("0.0");
             mInitialized = true;
         } else {
-            if(Math.abs(mLastX - x)>1)
-                tvX.setText(Double.toString((double)Math.round(x * 1000d) / 1000d
+            if(Math.abs(mLastX - x)>0.1)
+                tvX.setText(Double.toString((double)Math.round(x * 100d) / 100d
                 ));
-            if(Math.abs(mLastY - y)>1)
-                tvY.setText(Double.toString((double)Math.round(y * 1000d) / 1000d
+            if(Math.abs(mLastY - y)>0.1)
+                tvY.setText(Double.toString((double)Math.round(y * 100d) / 100d
                 ));
-            if(Math.abs(mLastZ - z)>1)
-                tvZ.setText(Double.toString((double)Math.round(z * 1000d) / 1000d
+            if(Math.abs(mLastZ - z)>0.1)
+                tvZ.setText(Double.toString((double)Math.round(z * 100d) / 100d
                 ));
         }
         accel_layout.setBackgroundColor(colorGenerator(x,y,z));
@@ -86,11 +86,18 @@ public class Accelerometer extends AppCompatActivity implements SensorEventListe
 // can be safely ignored for this demo
     }
 
+    protected float[] lowPass( float[] input, float[] output ) {
+        if ( output == null ) return input;
+        for ( int i=0; i<input.length; i++ ) {
+            output[i] = output[i] + ALPHA * (input[i] - output[i]);
+        }
+        return output;
+    }
     public int colorGenerator(float x, float y, float z){
 
-        int newX=Math.abs(Math.round(x)*10)%255;
-        int newY=Math.abs(Math.round(y)*10)%255;
-        int newZ=Math.abs(Math.round(z)*10)%255;
+        int newX=Math.abs(Math.round(x)*50+100)%255;
+        int newY=Math.abs(Math.round(y)*50+100)%255;
+        int newZ=Math.abs(Math.round(z)*50+100)%255;
         int color = Color.argb(255, newX, newY,newZ);
         return color;
     }

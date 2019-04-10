@@ -20,16 +20,12 @@ public class MainActivity extends AppCompatActivity {
     public void openCompass(View view) {
         Intent intent = new Intent(this, Compass.class);
         startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY));
-
-        // Do something in response to button
     }
 
 
-    /** Called when the user taps the accelermoeter button */
+    /** Called when the user taps the accelerometer button */
     public void openAccelerometer(View view) {
         Intent intent = new Intent(this, Accelerometer.class);
         startActivity(intent);
-
-        // Do something in response to button
     }
 }
